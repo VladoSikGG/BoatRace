@@ -5,7 +5,9 @@ using UnityEngine;
 public class ControlPlayer : MonoBehaviour
 {
     public float speedMove;
-    public float jumpPower;
+    public float boostPower;
+
+    private float currentSpeed;
 
     private float gravityForce;
     private Vector3 moveVector;
@@ -44,6 +46,7 @@ public class ControlPlayer : MonoBehaviour
     {
         MovePlayer();
         GamingGravity();
+        MoveCamera();
 
         if (rightfingerId != -1)
         {
@@ -104,14 +107,14 @@ public class ControlPlayer : MonoBehaviour
     private void MovePlayer()
     {
         moveVector = Vector3.zero;
-        moveVector.x = joy.Horizontal;
+        moveVector.x = joy.Horizontal * -1;
         moveVector.z = joy.Vertical * -1;
 
         moveVector.y = gravityForce;
 
         moveVector = transform.right * moveVector.x + cameraTransform.forward * moveVector.z + transform.up * moveVector.y;
 
-        ch_controller.Move(moveVector * speedMove * Time.deltaTime);
+        ch_controller.Move(moveVector * currentSpeed * Time.deltaTime);
     }
 
     private void GamingGravity()
@@ -124,9 +127,18 @@ public class ControlPlayer : MonoBehaviour
             gravityForce = -1f;
     }
 
-    public void OnClickJump()
+    public void OnClickBoost()
     {
-        if (ch_controller.isGrounded)
-            gravityForce = jumpPower;
+        currentSpeed = boostPower;
+    }
+
+    public void OffClickBoost()
+    {
+        currentSpeed = speedMove;
+    }
+
+    private void MoveCamera()
+    {
+        cameraTransform.position = player.transform.position + new Vector3(0, 1, -3);
     }
 }
