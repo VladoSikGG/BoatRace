@@ -4,141 +4,52 @@ using UnityEngine;
 
 public class ControlPlayer : MonoBehaviour
 {
-    public float speedMove;
-    public float boostPower;
-
-    private float currentSpeed;
-
-    private float gravityForce;
-    private Vector3 moveVector;
-
-    private CharacterController ch_controller;
-
-    public Joystick joy;
-
-    public Transform cameraTransform;
-
-    public float cameraSensitivity;
-    public float moveInputDeadZone;
-
-    private int rightfingerId;
-    private float halfScreenWidth;
-
-
-    private Vector2 lookInput;
-    private float cameraPitch;
-
-    public Transform player;
-
-
+    public Rigidbody rig;
+    public Transform mainCamera;
+    public float jumpForce = 3.5f;
+    public float walkingSpeed = 2f;
+    public float runningSpeed = 6f;
+    public float currentSpeed;
+    private float animationInterpolation = 1f;
+    public FixedJoystick joy;
+    private float _vertical, _horizontal;
+    public float multiplayer;
 
     void Start()
     {
-        ch_controller = GetComponent<CharacterController>();
+        rig = GetComponent<Rigidbody>();
+    }
+    void Boost()
+    {
+        currentSpeed = Mathf.Lerp(currentSpeed, runningSpeed, Time.deltaTime * 3);
+    }
+    void NotBoost()
+    {
+        currentSpeed = Mathf.Lerp(currentSpeed, walkingSpeed, Time.deltaTime * 3);
+    }
+    private void Update()
+    {
+        transform.rotation = Quaternion.Euler(transform.rotation.eulerAngles.x, mainCamera.rotation.eulerAngles.y, transform.rotation.eulerAngles.z);
 
-        rightfingerId = -1;
-
-        halfScreenWidth = Screen.width / 2;
-
+        NotBoost();
+        
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        MovePlayer();
-        GamingGravity();
-        MoveCamera();
+        _horizontal = Mathf.Lerp(_horizontal, joy.Horizontal, Time.deltaTime * multiplayer);
+        _vertical = Mathf.Lerp(_vertical, joy.Vertical, Time.deltaTime * multiplayer);
+        Vector3 camF = mainCamera.forward;
+        Vector3 camR = mainCamera.right;
+        camF.y = 0;
+        camR.y = 0;
 
-        if (rightfingerId != -1)
-        {
-            LookAroud();
-        }
-    }
+        Vector3 movingVector;
+        movingVector = Vector3.ClampMagnitude(camF.normalized *  _vertical * -1 * currentSpeed + camR.normalized * _horizontal * -1 * currentSpeed, currentSpeed);
 
-    void Update()
-    {
-        GetTouchinput();
-    }
-
-    private void GetTouchinput()
-    {
-        for (int i = 0; i < Input.touchCount; i++)
-        {
-            Touch t = Input.GetTouch(i);
-
-            switch (t.phase)
-            {
-                case TouchPhase.Began:
-                    if (t.position.x > halfScreenWidth && rightfingerId == -1)
-                    {
-                        rightfingerId = t.fingerId;
-                    }
-                    break;
-                case TouchPhase.Ended:
-                case TouchPhase.Canceled:
-                    if (t.fingerId == rightfingerId)
-                    {
-                        rightfingerId = -1;
-                    }
-                    break;
-                case TouchPhase.Moved:
-                    if (t.fingerId == rightfingerId)
-                    {
-                        lookInput = t.deltaPosition * cameraSensitivity * Time.deltaTime;
-                    }
-                    break;
-                case TouchPhase.Stationary:
-                    if (t.fingerId == rightfingerId)
-                    {
-                        lookInput = Vector2.zero;
-                    }
-                    break;
-            }
-        }
-    }
-
-    private void LookAroud()
-    {
-        cameraPitch = Mathf.Clamp(cameraPitch - lookInput.y, -90f, 90f);
-        cameraTransform.localRotation = Quaternion.Euler(cameraPitch, 0, 0);
-
-        transform.Rotate(transform.up, lookInput.x);
-    }
-
-    private void MovePlayer()
-    {
-        moveVector = Vector3.zero;
-        moveVector.x = joy.Horizontal * -1;
-        moveVector.z = joy.Vertical * -1;
-
-        moveVector.y = gravityForce;
-
-        moveVector = transform.right * moveVector.x + cameraTransform.forward * moveVector.z + transform.up * moveVector.y;
-
-        ch_controller.Move(moveVector * currentSpeed * Time.deltaTime);
-    }
-
-    private void GamingGravity()
-    {
-        if (!ch_controller.isGrounded)
-        {
-            gravityForce -= 10f * Time.deltaTime;
-        }
-        else
-            gravityForce = -1f;
-    }
-
-    public void OnClickBoost()
-    {
-        currentSpeed = boostPower;
-    }
-
-    public void OffClickBoost()
-    {
-        currentSpeed = speedMove;
-    }
-
-    private void MoveCamera()
-    {
-        cameraTransform.position = player.transform.position + new Vector3(0, 1, -3);
+        rig.velocity = new Vector3(movingVector.x, rig.velocity.y, movingVector.z);
+ 
+        rig.angularVelocity = Vector3.zero;
     }
 }
+
