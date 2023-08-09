@@ -11,6 +11,6 @@ public class lvlStart : MonoBehaviour
     public void OnClick()
     {
         _sndButton.Play();
-        SceneManager.LoadScene(_indexLvl);
+        SceneManager.LoadScene($"lvl{_indexLvl}");
     }
 }
