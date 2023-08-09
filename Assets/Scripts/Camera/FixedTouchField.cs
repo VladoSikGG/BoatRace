@@ -1,10 +1,7 @@
-using Cinemachine;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
- 
-public class InputField : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+
+public class FixedTouchField : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     [HideInInspector]
     public Vector2 TouchDist;
@@ -15,6 +12,13 @@ public class InputField : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     [HideInInspector]
     public bool Pressed;
 
+    // Use this for initialization
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
     void Update()
     {
         if (Pressed)
@@ -48,4 +52,5 @@ public class InputField : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         Pressed = false;
     }
+
 }
