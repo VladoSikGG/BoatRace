@@ -8,6 +8,7 @@ public class AccesForLevel : MonoBehaviour
     [SerializeField] private GameObject _lock;
     [SerializeField] private int _lvlNum;
 
+    
     private void Update()
     {
         if (PlayerPrefs.GetInt("openLevel") < _lvlNum)
